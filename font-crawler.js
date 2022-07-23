@@ -207,7 +207,7 @@
                         return false;
 
                     return typeof filter === "function" ? filter.call(this, entry[0], entry[1]) : true;
-                });
+                }.bind(this));
         },
 
         /**
