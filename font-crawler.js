@@ -77,9 +77,9 @@
              * Set this if you wish to check fonts on pseudo elements as well.
              * Use comma delimited string (for example: "before,after").
              *
-             * @type {String|Boolean}
+             * @type {String|Null}
              */
-            usePseudoElements: false,
+            usePseudoElements: null,
 
             /**
              * Elements filter method.
