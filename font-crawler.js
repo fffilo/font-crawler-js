@@ -492,7 +492,8 @@
             if (!this.__frameTimestamp)
                 this.__frameTimestamp = this._getTimestamp();
 
-            this._handleEntry(entries.shift(), source);
+            if (entries.length)
+                this._handleEntry(entries.shift(), source);
             this._crawlAsyncRecursion(entries, source, callback);
         },
 
