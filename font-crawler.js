@@ -69,14 +69,14 @@
              *
              * @type {String|Null}
              */
-            includeElements: null,
+            includeElements: 'input:not([type="checkbox"]):not([type="hidden"]):not([type="radio"]):not([type="range"]),textarea',
 
             /**
              * Exclude elements from crawler.
              *
              * @type {String|Null}
              */
-            excludeElements: "base,head,link,meta,style,title",
+            excludeElements: "base,head,link,meta,script,style,title",
 
             /**
              * Use pseudo element.
@@ -216,6 +216,7 @@
             elements = this._filterElements(elements);
 
             var entries = this._mapElementsAsEntries(elements);
+            entries = this._usePseudoElementEntries(entries);
             entries = this._filterEntries(entries);
 
             return entries;
@@ -230,8 +231,10 @@
             this._querySelectorElementsAsync(function(elements) {
                 this._filterElementsAsync(elements, function(elements) {
                     this._mapElementsAsEntriesAsync(elements, function(entries) {
-                        this._filterEntriesAsync(entries, function(entries) {
-                            callback.call(this, entries);
+                        this._usePseudoElementEntriesAsync(entries, function(entries) {
+                            this._filterEntriesAsync(entries, function(entries) {
+                                callback.call(this, entries);
+                            });
                         });
                     });
                 });
@@ -326,6 +329,58 @@
          */
         _mapElementsAsEntriesAsync: function(elements, callback) {
             this._delayExec(false, this._mapElementsAsEntries, [ elements ], callback);
+        },
+
+        /**
+         * Use pseudo element for each entry:
+         * ...with option (string, array, or function) defined in filter
+         * option.
+         *
+         * @param  {Array} entries
+         * @return {Array}
+         */
+        _usePseudoElementEntries: function(entries) {
+            var usePseudoElement = this.getOption("usePseudoElement");
+            if (!usePseudoElement)
+                return entries;
+
+            if (typeof usePseudoElement === "string")
+                usePseudoElement = usePseudoElement.split(/\s*,\s*/);
+
+            if (this._isArray(usePseudoElement))
+                return entries.reduce(function(result, entry) {
+                    result.push(entry);
+                    usePseudoElement.forEach(function(pseudo) {
+                        result.push([ entry[0], "::" + pseudo.replace(/^:+/, "") ]);
+                    });
+
+                    return result;
+                }, []);
+            else if (typeof usePseudoElement === "function")
+                return entries.reduce(function(result, entry) {
+                    result.push(entry);
+
+                    var option = usePseudoElement.call(this, entry[0], entry[1]);
+                    if (typeof option === "string")
+                        option = option.split(/\s*,\s*/);
+                    if (this._isArray(option))
+                        option.forEach(function(pseudo) {
+                            result.push([ entry[0], "::" + pseudo.replace(/^:+/, "") ]);
+                        });
+
+                    return result;
+                }.bind(this), []);
+        },
+
+        /**
+         * Use pseudo element for each entry async.
+         *
+         * @param  {Array}    entries
+         * @param  {Function} callback
+         * @return {Void}
+         */
+        _usePseudoElementEntriesAsync: function(entries, callback) {
+            this._delayExec(!!this.getOption("usePseudoElement"), this._usePseudoElementEntries, [ entries ], callback);
         },
 
         /**
@@ -429,6 +484,16 @@
          */
         _cancelAnimationFrame: function(requestID) {
             this.window.cancelAnimationFrame(requestID);
+        },
+
+        /**
+         * Is variable array.
+         *
+         * @param  {Mixed}   value
+         * @return {Boolean}
+         */
+        _isArray: function(value) {
+            return Object.prototype.toString.call(value) === "[object Array]";
         },
 
         /**
