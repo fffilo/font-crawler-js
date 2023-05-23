@@ -62,16 +62,6 @@
             includeTarget: true,
 
             /**
-             * Use pseudo elements.
-             *
-             * Set this if you wish to check fonts on pseudo elements as well.
-             * Use comma delimited string (for example: "before,after").
-             *
-             * @type {String|Null}
-             */
-            usePseudoElements: null,
-
-            /**
              * Elements filter method.
              *
              * @type {Function|Null}
@@ -202,7 +192,6 @@
             elements = this._filterElements(elements);
 
             var entries = this._mapElementsAsEntries(elements);
-            entries = this._addPseudoEntries(entries);
             entries = this._filterEntries(entries);
 
             return entries;
@@ -217,10 +206,8 @@
             this._querySelectorElementsAsync(function(elements) {
                 this._filterElementsAsync(elements, function(elements) {
                     this._mapElementsAsEntriesAsync(elements, function(entries) {
-                        this._addPseudoEntriesAsync(entries, function(entries) {
-                            this._filterEntriesAsync(entries, function(entries) {
-                                callback.call(this, entries);
-                            });
+                        this._filterEntriesAsync(entries, function(entries) {
+                            callback.call(this, entries);
                         });
                     });
                 });
@@ -306,42 +293,6 @@
          */
         _mapElementsAsEntriesAsync: function(elements, callback) {
             this._delayExec(false, this._mapElementsAsEntries, [ elements ], callback);
-        },
-
-        /**
-         * Add pseudo entries:
-         * expand list of entries with pseudo elements from usePseudoElements
-         * option.
-         *
-         * @param  {Array} entries
-         * @return {Array}
-         */
-        _addPseudoEntries: function(entries) {
-            var pseudoElements = this.getOption("usePseudoElements");
-            if (pseudoElements) {
-                pseudoElements = pseudoElements.replace(/[^\w\-,]/g, "").split(",");
-
-                return entries.reduce(function(carry, entry) {
-                    carry.push(entry);
-
-                    pseudoElements.forEach(function(pseudo) {
-                        carry.push([ entry[0], "::" + pseudo ]);
-                    });
-                }, []);
-            }
-
-            return entries;
-        },
-
-        /**
-         * Add pseudo entries async.
-         *
-         * @param  {Array}    entries
-         * @param  {Function} callback
-         * @return {Void}
-         */
-        _addPseudoEntriesAsync: function(entries, callback) {
-            this._delayExec(this.getOption("usePseudoElements"), this._addPseudoEntries, [ entries ], callback);
         },
 
         /**
