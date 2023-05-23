@@ -62,16 +62,6 @@
             includeTarget: true,
 
             /**
-             * Use text nodes only.
-             *
-             * If set to true elements with no text nodes will be skipped: there
-             * is no text on it and the font is not rendered.
-             *
-             * @type {Boolean}
-             */
-            useTextNodesOnly: true,
-
-            /**
              * Use pseudo elements.
              *
              * Set this if you wish to check fonts on pseudo elements as well.
@@ -268,18 +258,16 @@
 
         /**
          * Filter elements:
-         * do not use elements without text nodes (if option useTextNodesOnly
-         * is set to true).
+         * do not use elements without text nodes, use includeElements and
+         * excludeElements options.
          *
          * @param  {Array} elements
          * @return {Array}
          */
         _filterElements: function(elements) {
-            var useTextNodesOnly = this.getOption("useTextNodesOnly");
-            if (useTextNodesOnly)
-                elements = elements.filter(function(element) {
-                    return this._hasTextNodeChild(element);
-                }.bind(this));
+            elements = elements.filter(function(element) {
+                return this._hasTextNodeChild(element);
+            }.bind(this));
 
             return elements;
         },
@@ -292,7 +280,7 @@
          * @return {Void}
          */
         _filterElementsAsync: function(elements, callback) {
-            this._delayExec(this.getOption("useTextNodesOnly"), this._filterElements, [ elements ], callback);
+            this._delayExec(true, this._filterElements, [ elements ], callback);
         },
 
         /**
