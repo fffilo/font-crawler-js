@@ -62,6 +62,30 @@
             includeTarget: true,
 
             /**
+             * Include elements into crawler (beside elements with text nodes).
+             *
+             * The matches method with this string selector (if set) will be
+             * executed on each element.
+             *
+             * @type {String|Null}
+             */
+            includeElements: null,
+
+            /**
+             * Exclude elements from crawler.
+             *
+             * @type {String|Null}
+             */
+            excludeElements: "base,head,link,meta,style,title",
+
+            /**
+             * Use pseudo element.
+             *
+             * @type {String|Function|Null}
+             */
+            usePseudoElement: null,
+
+            /**
              * Elements filter method.
              *
              * @type {Function|Null}
@@ -252,7 +276,15 @@
          * @return {Array}
          */
         _filterElements: function(elements) {
+            var includeElements = this.getOption("includeElements"),
+                excludeElements = this.getOption("excludeElements");
+
             elements = elements.filter(function(element) {
+                if (includeElements && element.matches(includeElements))
+                    return true;
+                else if (excludeElements && element.matches(excludeElements))
+                    return false;
+
                 return this._hasTextNodeChild(element);
             }.bind(this));
 
@@ -271,9 +303,10 @@
         },
 
         /**
-         * Map elements as entries:
-         * map each element as array of element and null (where null is pseudo
-         * element).
+         * Map elements as entries.
+         *
+         * Map each element as array of element and null (where null is pseudo
+         * class).
          *
          * @param  {Array} elements
          * @return {Array}
