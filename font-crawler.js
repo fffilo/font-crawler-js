@@ -81,7 +81,7 @@
             /**
              * Use pseudo element.
              *
-             * @type {String|Function|Null}
+             * @type {String|Array|Function|Null}
              */
             usePseudoElement: null,
 
@@ -443,12 +443,22 @@
         /**
          * Element has text node child.
          *
+         * If text content is whitespace we should check text content of
+         * parent node as well to make sure the "text" is not tag
+         * separator.
+         *
          * @param  {HTMLElement} element
          * @return {Boolean}
          */
         _hasTextNodeChild: function(element) {
             for (var i = 0; i < element.childNodes.length; i++) {
-                if (element.childNodes[i].nodeType === Node.TEXT_NODE)
+                var child = element.childNodes[i];
+                if (child.nodeType !== Node.TEXT_NODE)
+                    continue;
+
+                if (child.textContent.trim())
+                    return true;
+                else if (child.parentNode.textContent.trim())
                     return true;
             }
 
