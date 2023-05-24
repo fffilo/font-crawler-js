@@ -93,6 +93,13 @@
             filter: null,
 
             /**
+             * Exclude font families.
+             *
+             * @type {Array|Null}
+             */
+            excludeFontFamilies: null,
+
+            /**
              * Duration of each async interval (in milliseconds).
              *
              * Math.floor(1000/60)
@@ -629,6 +636,10 @@
          * @return {Object}
          */
         _handleSource: function(element, pseudo, css, source) {
+            var exclude = this.getOption("excludeFontFamilies");
+            if (this._isArray(exclude) && exclude.indexOf(css.fontFamily) !== -1)
+                return source;
+
             var map = css.fontWeight + (css.fontStyle === "normal" ? "" : "i");
             if (!(css.fontFamily in source))
                 source[css.fontFamily] = [];
